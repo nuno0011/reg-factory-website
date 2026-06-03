@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REG FACTORY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Web3Modal -->
+  <script type="module" src="https://unpkg.com/@web3modal/ethers@5.0.21/dist/web3modal-ethers.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #d4d4d4;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    #bg-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0; pointer-events: none; opacity: 0.4;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100; padding: 1.5rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, transparent 100%);
+    }
+    .nav-logo { font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; color: #fff; }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { color: #888; text-decoration: none; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.05em; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-connect {
+      background: transparent; border: 1px solid #333; color: #fff;
+      padding: 0.5rem 1.25rem; font-size: 0.8rem; letter-spacing: 0.08em;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .nav-connect:hover { border-color: #666; background: rgba(255,255,255,0.05); }
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding: 8rem 2rem 4rem;
+    }
+    .hero-eyebrow { font-size: 0.75rem; letter-spacing: 0.25em; color: #555; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .hero-title { font-size: clamp(3rem, 8vw, 7rem); font-weight: 300; letter-spacing: -0.03em; color: #fff; line-height: 1.05; margin-bottom: 1.5rem; }
+    .hero-title em { font-style: italic; color: #666; }
+    .hero-sub { font-size: 1rem; color: #777; max-width: 480px; margin-bottom: 3rem; font-weight: 300; line-height: 1.7; }
+    .hero-cta { display: flex; gap: 1rem; align-items: center; }
+    .btn-primary {
+      background: transparent; border: 1px solid #555; color: #fff;
+      padding: 0.85rem 2.5rem; font-size: 0.85rem; letter-spacing: 0.1em;
+      cursor: pointer; transition: all 0.25s; font-family: 'Inter', sans-serif; text-transform: uppercase;
+    }
+    .btn-primary:hover { border-color: #fff; background: rgba(255,255,255,0.06); }
+    .btn-secondary {
+      background: transparent; border: 1px solid #222; color: #666;
+      padding: 0.85rem 2.5rem; font-size: 0.85rem; letter-spacing: 0.1em;
+      cursor: pointer; transition: all 0.25s; font-family: 'Inter', sans-serif; text-transform: uppercase;
+    }
+    .btn-secondary:hover { border-color: #444; color: #999; }
+    .hero-stats { display: flex; gap: 3rem; margin-top: 4rem; }
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-size: 1.5rem; font-weight: 300; color: #fff; }
+    .hero-stat-label { font-size: 0.7rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.25rem; }
+    section { position: relative; z-index: 1; padding: 6rem 2rem; max-width: 1000px; margin: 0 auto; }
+    .section-label { font-size: 0.7rem; letter-spacing: 0.25em; color: #444; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .section-title { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 300; color: #fff; margin-bottom: 2rem; letter-spacing: -0.02em; }
+    .section-body { font-size: 0.95rem; color: #777; line-height: 1.8; max-width: 640px; }
+    .section-body p { margin-bottom: 1.25rem; }
+    .mint-card { border: 1px solid #1a1a1a; padding: 3rem; text-align: center; max-width: 420px; margin: 0 auto; }
+    .mint-label { font-size: 0.7rem; letter-spacing: 0.2em; color: #555; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .mint-price { font-size: 3rem; font-weight: 300; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+    .mint-price-sub { font-size: 0.8rem; color: #555; margin-bottom: 2rem; }
+    .mint-qty { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; }
+    .mint-qty-btn { background: transparent; border: 1px solid #222; color: #888; width: 36px; height: 36px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .mint-qty-btn:hover { border-color: #444; color: #fff; }
+    .mint-qty-num { font-size: 1.2rem; color: #fff; font-weight: 300; min-width: 2rem; }
+    .mint-btn { width: 100%; background: transparent; border: 1px solid #333; color: #fff; padding: 1rem; font-size: 0.85rem; letter-spacing: 0.1em; cursor: pointer; transition: all 0.25s; font-family: 'Inter', sans-serif; text-transform: uppercase; }
+    .mint-btn:hover { border-color: #666; background: rgba(255,255,255,0.04); }
+    .mint-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .roadmap-grid { display: flex; flex-direction: column; gap: 2.5rem; margin-top: 3rem; }
+    .roadmap-item { display: flex; gap: 2rem; align-items: flex-start; border-bottom: 1px solid #111; padding-bottom: 2.5rem; }
+    .roadmap-phase { font-size: 0.7rem; letter-spacing: 0.2em; color: #444; text-transform: uppercase; min-width: 80px; font-weight: 500; }
+    .roadmap-content h3 { font-size: 1.1rem; font-weight: 400; color: #ccc; margin-bottom: 0.5rem; }
+    .roadmap-content p { font-size: 0.85rem; color: #666; line-height: 1.7; }
+    .faq-item { border-bottom: 1px solid #111; padding: 1.25rem 0; cursor: pointer; }
+    .faq-question { display: flex; justify-content: space-between; align-items: center; color: #aaa; font-size: 0.9rem; font-weight: 400; }
+    .faq-question span { font-size: 1.2rem; color: #444; transition: transform 0.2s; }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; color: #666; font-size: 0.85rem; line-height: 1.7; }
+    .faq-item.open .faq-answer { max-height: 300px; padding-top: 1rem; }
+    .faq-item.open .faq-question span { transform: rotate(45deg); }
+    footer { position: relative; z-index: 1; border-top: 1px solid #111; padding: 3rem; text-align: center; }
+    .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+    .footer-links a { color: #555; text-decoration: none; font-size: 0.8rem; letter-spacing: 0.05em; transition: color 0.2s; }
+    .footer-links a:hover { color: #999; }
+    .footer-copy { font-size: 0.7rem; color: #333; letter-spacing: 0.05em; }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links a { display: none; }
+      .nav-links a:last-child { display: block; }
+      .hero-stats { flex-direction: column; gap: 1.5rem; }
+      .mint-card { padding: 2rem 1.5rem; }
+      .roadmap-item { flex-direction: column; gap: 0.5rem; }
+    }
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <nav>
+    <div class="nav-logo">REG FACTORY</div>
+    <div class="nav-links">
+      <a href="#about">ABOUT</a>
+      <a href="#mint">MINT</a>
+      <a href="#roadmap">ROADMAP</a>
+      <a href="#faq">FAQ</a>
+      <button class="nav-connect" id="wallet-btn">CONNECT</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-eyebrow">GENERATIVE · AUTOMATION · INFRASTRUCTURE</div>
+    <h1 class="hero-title">ACCOUNT<br /><em>FACTORY</em></h1>
+    <p class="hero-sub">A fully autonomous pipeline. Generate accounts at scale. ChatGPT · Claude · Grok · Outlook. One click mint.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="document.getElementById('mint').scrollIntoView({behavior:'smooth'})">MINT NOW</button>
+      <button class="btn-secondary" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">LEARN MORE</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">4</div><div class="hero-stat-label">Platforms</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">∞</div><div class="hero-stat-label">Supply</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">0%</div><div class="hero-stat-label">Fee</div></div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="section-label">· 001 · ABOUT</div>
+    <h2 class="section-title">Built to scale.<br />Designed to persist.</h2>
+    <div class="section-body">
+      <p>Reg Factory is a fully autonomous account generation pipeline. It spins up disposable Outlook mailboxes, then uses them to register accounts across ChatGPT, Claude, and Grok — all behind unique browser fingerprints and rotating proxies.</p>
+      <p>No dashboard. No hand-holding. Just raw infrastructure that runs 24/7 and outputs verified cookies ready for use.</p>
+      <p>Each mint is an entry. Another presence. Another account ready to deploy.</p>
+    </div>
+  </section>
+
+  <section id="mint">
+    <div class="section-label">· 002 · MINT</div>
+    <h2 class="section-title" style="text-align:center;">Acquire an Entry</h2>
+    <div class="mint-card">
+      <div class="mint-label">Price per Account</div>
+      <div class="mint-price">8 <span style="font-size:1.2rem;color:#666;">USDT</span></div>
+      <div class="mint-price-sub">ChatGPT · Claude · Grok · Outlook</div>
+      <div class="mint-qty">
+        <button class="mint-qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="mint-qty-num" id="mint-qty">1</span>
+        <button class="mint-qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <div style="margin-bottom:1.5rem;font-size:0.8rem;color:#555;">Total: <span id="mint-total">8</span> USDT</div>
+      <button class="mint-btn" id="mint-btn" onclick="handleMint()">CONNECT WALLET</button>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="section-label">· 003 · ROADMAP</div>
+    <h2 class="section-title">The Path</h2>
+    <div class="roadmap-grid">
+      <div class="roadmap-item"><div class="roadmap-phase">PHASE 1</div><div class="roadmap-content"><h3>Core Pipeline</h3><p>Automated Outlook generation. BitBrowser fingerprint isolation. Clash-based proxy rotation. Run 24/7 on consumer hardware.</p></div></div>
+      <div class="roadmap-item"><div class="roadmap-phase">PHASE 2</div><div class="roadmap-content"><h3>Multi-Platform Expansion</h3><p>ChatGPT, Claude, and Grok registration flows. Cookie export for instant use. Concurrent multi-account processing via mailbox broker.</p></div></div>
+      <div class="roadmap-item"><div class="roadmap-phase">PHASE 3</div><div class="roadmap-content"><h3>Self-Service Mint</h3><p>Public mint interface. USDT payment with auto-delivery. Telegram bot integration. Real-time inventory and status tracking.</p></div></div>
+      <div class="roadmap-item" style="border-bottom:none;padding-bottom:0;"><div class="roadmap-phase">PHASE 4</div><div class="roadmap-content"><h3>Infrastructure as a Service</h3><p>API access for partners. GPU-Hunter integration for on-demand compute. Custom platform support via plugin system.</p></div></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="section-label">· 004 · FAQ</div>
+    <h2 class="section-title">Common Questions</h2>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">What accounts do I get?<span>+</span></div>
+      <div class="faq-answer">Each mint delivers a ready-to-use account bundle including ChatGPT, Claude, and Grok — all registered under a single Outlook mailbox. Cookies are exported and accessible immediately.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">How are accounts generated?<span>+</span></div>
+      <div class="faq-answer">The pipeline uses BitBrowser for unique browser fingerprints, Clash Verge for clean proxy rotation, and automated CAPTCHA solving — fully headless and unattended.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">What payment do you accept?<span>+</span></div>
+      <div class="faq-answer">USDT (TRC-20). After minting, you'll receive a payment address and QR code. Once the transaction is confirmed on-chain, your account credentials are delivered automatically via the dashboard and Telegram.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Can I run this myself?<span>+</span></div>
+      <div class="faq-answer">Yes. The full source code is open on GitHub. Clone it, configure your environment, and you're running. The mint is for those who prefer a turnkey solution.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Is this legal?<span>+</span></div>
+      <div class="faq-answer">This tool is provided for educational and authorized testing purposes only. Users are responsible for compliance with applicable terms of service.</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-links">
+      <a href="https://github.com/tiantianGPU/reg-factory" target="_blank">GITHUB</a>
+      <a href="https://t.me/xiadayubot" target="_blank">TELEGRAM</a>
+      <a href="#">X / TWITTER</a>
+    </div>
+    <div class="footer-copy">REG FACTORY · 2025</div>
+  </footer>
+
+  <script>
+    // ── Background Canvas ──
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    class Particle {
+      constructor() { this.x = Math.random() * w; this.y = Math.random() * h; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.r = Math.random() * 1.5 + 0.5; this.a = Math.random() * 0.4 + 0.1; }
+      update() { this.x += this.vx; this.y += this.vy; if (this.x < 0) this.x = w; if (this.x > w) this.x = 0; if (this.y < 0) this.y = h; if (this.y > h) this.y = 0; }
+      draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${this.a})`; ctx.fill(); }
+    }
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => { p.update(); p.draw(); });
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255,255,255,${0.06 * (1 - dist / 120)})`; ctx.lineWidth = 0.5; ctx.stroke(); }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // ── Scroll Animation ──
+    const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // ── Mint Qty ──
+    let qty = 1;
+    const PRICE = 8;
+    function changeQty(delta) { qty = Math.max(1, Math.min(10, qty + delta)); document.getElementById('mint-qty').textContent = qty; document.getElementById('mint-total').textContent = qty * PRICE; }
+
+    // ── FAQ ──
+    function toggleFaq(el) { el.classList.toggle('open'); }
+
+    // ── Web3Modal ──
+    import { createWeb3Modal, defaultConfig } from 'https://unpkg.com/@web3modal/ethers@5.0.21/dist/web3modal-ethers.js';
+
+    const projectId = 'f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7'; // public demo WalletConnect ID — replace with yours
+
+    const modal = createWeb3Modal({
+      ethersConfig: defaultConfig({ metadata: { name: 'Reg Factory', description: 'Account Mint Platform', url: 'https://regfactory.xyz', icons: [] } }),
+      chains: [{
+        chainId: 1,       // Ethereum mainnet
+        name: 'Ethereum',
+        currency: 'ETH',
+        explorerUrl: 'https://etherscan.io',
+        rpcUrl: 'https://cloudflare-eth.com'
+      }],
+      projectId,
+      themeMode: 'dark',
+      themeVariables: {
+        '--w3m-accent': '#ffffff',
+        '--w3m-background': '#0a0a0a',
+        '--w3m-color-mix': '#0a0a0a',
+        '--w3m-color-mix-strength': 40,
+        '--w3m-border-color': '#1a1a1a',
+        '--w3m-border-radius-master': '0px',
+        '--w3m-font-family': 'Inter, sans-serif'
+      }
+    });
+
+    // ── Connect / Disconnect ──
+    let walletAddress = null;
+
+    document.getElementById('wallet-btn').addEventListener('click', async () => {
+      if (!walletAddress) {
+        await modal.open();
+      } else {
+        await modal.disconnect();
+        walletAddress = null;
+        updateUI();
+      }
+    });
+
+    modal.subscribeState((state) => {
+      if (state.address) {
+        walletAddress = state.address;
+        updateUI();
+      }
+    });
+
+    function updateUI() {
+      const btn = document.getElementById('wallet-btn');
+      const mintBtn = document.getElementById('mint-btn');
+      if (walletAddress) {
+        btn.textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+        btn.style.borderColor = '#4a4';
+        mintBtn.textContent = 'MINT';
+        mintBtn.disabled = false;
+      } else {
+        btn.textContent = 'CONNECT';
+        btn.style.borderColor = '#333';
+        mintBtn.textContent = 'CONNECT WALLET';
+        mintBtn.disabled = true;
+      }
+    }
+
+    // ── Mint Handler ──
+    function handleMint() {
+      if (!walletAddress) {
+        modal.open();
+        return;
+      }
+      const btn = document.getElementById('mint-btn');
+      btn.textContent = 'MINTING...';
+      btn.disabled = true;
+      const totalUsdt = qty * PRICE;
+      setTimeout(() => {
+        alert(`Mint initiated!\nSending ${totalUsdt} USDT from ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}\n\nPayment flow coming soon.`);
+        btn.textContent = 'MINT';
+        btn.disabled = false;
+      }, 2000);
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
