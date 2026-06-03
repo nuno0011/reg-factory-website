@@ -243,6 +243,13 @@ async function connectWallet(){
   try{
     wa=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
     u();
+    // Request signature to verify ownership
+    try{
+      const msg='Welcome to Reg Factory\n\nSign this message to verify your wallet ownership.\n\nAddress: '+wa+'\nTimestamp: '+Date.now();
+      const sig=await window.ethereum.request({method:'personal_sign',params:[msg,wa]});
+      window._sig=sig;
+      window._sigMsg=msg;
+    }catch(e){/* signature optional */}
     window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;u()});
     window.ethereum.on('chainChanged',()=>location.reload());
   }catch(e){alert('Connection failed.')}
