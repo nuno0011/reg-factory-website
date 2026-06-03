@@ -7,8 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@web3modal/ethers@5.0.21/dist/web3modal-ethers.min.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -139,8 +137,9 @@
   <div class="footer-copy">REG FACTORY · 2025</div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 <script>
-// Background canvas
+// Background
 (function(){
   const c=document.getElementById('bg-canvas'),x=c.getContext('2d');
   let w,h,p=[];
@@ -152,20 +151,21 @@
 })();
 
 const CA='0xAF73362CC150eb9d92c2abd84c1F88D4DB7dc0E5', UA='0x55d398326f99059fF775485246999027B3197955';
-let qty=1;
+let qty=1, wa=null, pr=null;
 function cq(d){qty=Math.max(1,Math.min(10,qty+d));document.getElementById('mint-qty').textContent=qty;document.getElementById('mint-total').textContent=qty*8}
 
-// Web3Modal
-const modal=createWeb3Modal({
-  ethersConfig:defaultConfig({metadata:{name:'Reg Factory',description:'Account Mint',url:'https://regfactory.xyz',icons:[]}}),
-  chains:[{chainId:56,name:'BNB Smart Chain',currency:'BNB',explorerUrl:'https://bscscan.com',rpcUrl:'https://bsc-dataseed1.binance.org'}],
-  projectId:'f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',themeMode:'dark',
-  themeVariables:{'--w3m-accent':'#ffffff','--w3m-background':'#0a0a0a','--w3m-color-mix':'#0a0a0a','--w3m-color-mix-strength':40,'--w3m-border-color':'#1a1a1a','--w3m-border-radius-master':'0px','--w3m-font-family':'Inter, sans-serif'}
-});
+async function connectWallet(){
+  if(typeof window.ethereum==='undefined'){alert('Install MetaMask or OKX Wallet.');return}
+  try{
+    pr=new ethers.BrowserProvider(window.ethereum);
+    wa=(await pr.send('eth_requestAccounts',[]))[0];
+    u();
+    window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;pr=wa?pr:null;u()});
+    window.ethereum.on('chainChanged',()=>location.reload());
+  }catch(e){console.error(e)}
+}
 
-let wa=null,pr=null;
-document.getElementById('wallet-btn').onclick=async function(){if(!wa)await modal.open();else{await modal.disconnect();wa=null;pr=null;u()}};
-modal.subscribeState(function(s){if(s.address){wa=s.address;pr=new ethers.BrowserProvider(window.ethereum);u()}});
+document.getElementById('wallet-btn').onclick=function(){if(wa){wa=null;pr=null;u()}else connectWallet()};
 
 function u(){
   const b=document.getElementById('wallet-btn'),m=document.getElementById('mint-btn');
@@ -174,7 +174,7 @@ function u(){
 }
 
 async function handleMint(){
-  if(!wa){await modal.open();return}
+  if(!wa){connectWallet();return}
   if(!pr)pr=new ethers.BrowserProvider(window.ethereum);
   const n=await pr.getNetwork();
   if(n.chainId!==56n){alert('Switch to BNB Smart Chain.');return}
