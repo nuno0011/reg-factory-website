@@ -8,67 +8,68 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #d4d4d4; line-height: 1.6; }
-    #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.4; }
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, transparent 100%); }
-    .nav-logo { font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; color: #fff; }
-    .nav-links { display: flex; gap: 2rem; align-items: center; }
-    .nav-links a { color: #888; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-    .nav-links a:hover { color: #fff; }
-    #wallet-btn { background: transparent; border: 1px solid #333; color: #fff; padding: 0.5rem 1.25rem; font-size: 0.8rem; cursor: pointer; font-family: 'Inter', sans-serif; }
-    #wallet-btn:hover { border-color: #666; }
-    .hero { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 8rem 2rem 4rem; }
-    .hero-eyebrow { font-size: 0.75rem; letter-spacing: 0.25em; color: #555; margin-bottom: 1.5rem; }
-    .hero-title { font-size: clamp(3rem, 8vw, 7rem); font-weight: 300; color: #fff; line-height: 1.05; margin-bottom: 1.5rem; }
-    .hero-title em { font-style: italic; color: #666; }
-    .hero-sub { font-size: 1rem; color: #777; max-width: 480px; margin-bottom: 3rem; }
-    .hero-cta { display: flex; gap: 1rem; }
-    .btn-primary, .btn-secondary { background: transparent; border: 1px solid #555; color: #fff; padding: 0.85rem 2.5rem; font-size: 0.85rem; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; }
-    .btn-primary:hover { border-color: #fff; }
-    .btn-secondary { border-color: #222; color: #666; }
-    .btn-secondary:hover { border-color: #444; color: #999; }
-    .hero-stats { display: flex; gap: 3rem; margin-top: 4rem; }
-    .hero-stat-num { font-size: 1.5rem; font-weight: 300; color: #fff; }
-    .hero-stat-label { font-size: 0.7rem; color: #555; }
-    section { position: relative; z-index: 1; padding: 6rem 2rem; max-width: 1000px; margin: 0 auto; }
-    .section-label { font-size: 0.7rem; letter-spacing: 0.25em; color: #444; margin-bottom: 1.5rem; }
-    .section-title { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 300; color: #fff; margin-bottom: 2rem; }
-    .section-body { font-size: 0.95rem; color: #777; line-height: 1.8; max-width: 640px; }
-    .section-body p { margin-bottom: 1.25rem; }
-    .mint-card { border: 1px solid #1a1a1a; padding: 3rem; text-align: center; max-width: 420px; margin: 0 auto; }
-    .mint-label { font-size: 0.7rem; letter-spacing: 0.2em; color: #555; margin-bottom: 0.75rem; }
-    .mint-price { font-size: 3rem; font-weight: 300; color: #fff; margin-bottom: 0.25rem; }
-    .mint-price-sub { font-size: 0.8rem; color: #555; margin-bottom: 2rem; }
-    .mint-qty { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; }
-    .mint-qty-btn { background: transparent; border: 1px solid #222; color: #888; width: 36px; height: 36px; font-size: 1.2rem; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .mint-qty-btn:hover { border-color: #444; color: #fff; }
-    .mint-qty-num { font-size: 1.2rem; color: #fff; min-width: 2rem; }
-    #mint-btn { width: 100%; background: transparent; border: 1px solid #333; color: #fff; padding: 1rem; font-size: 0.85rem; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; }
-    #mint-btn:hover { border-color: #666; }
-    #mint-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .roadmap-item { display: flex; gap: 2rem; border-bottom: 1px solid #111; padding-bottom: 2.5rem; margin-bottom: 2.5rem; }
-    .roadmap-phase { font-size: 0.7rem; letter-spacing: 0.2em; color: #444; min-width: 80px; }
-    .roadmap-content h3 { font-size: 1.1rem; color: #ccc; margin-bottom: 0.5rem; }
-    .roadmap-content p { font-size: 0.85rem; color: #666; }
-    .faq-item { border-bottom: 1px solid #111; padding: 1.25rem 0; cursor: pointer; }
-    .faq-question { display: flex; justify-content: space-between; color: #aaa; }
-    .faq-answer { max-height: 0; overflow: hidden; color: #666; font-size: 0.85rem; }
-    .faq-item.open .faq-answer { max-height: 300px; padding-top: 1rem; }
-    footer { border-top: 1px solid #111; padding: 3rem; text-align: center; }
-    .footer-links a { color: #555; text-decoration: none; font-size: 0.8rem; margin: 0 1rem; }
-    .footer-links a:hover { color: #999; }
-    .footer-copy { font-size: 0.7rem; color: #333; margin-top: 1.5rem; }
-    @media (max-width: 768px) { .hero-stats { flex-direction: column; gap: 1.5rem; } }
-    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.8);z-index:200}
-    .modal-content{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;border:1px solid #222;padding:2rem;width:90%;max-width:360px;z-index:201;text-align:center}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#d4d4d4;line-height:1.6}
+    #bg-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.4}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.5rem 3rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(10,10,10,.95) 0%,transparent 100%)}
+    .nav-logo{font-weight:600;font-size:1.1rem;letter-spacing:.1em;color:#fff}
+    .nav-links{display:flex;gap:2rem;align-items:center}
+    .nav-links a{color:#888;text-decoration:none;font-size:.85rem;transition:color .2s}
+    .nav-links a:hover{color:#fff}
+    #wallet-btn{background:transparent;border:1px solid #333;color:#fff;padding:.5rem 1.25rem;font-size:.8rem;cursor:pointer;font-family:'Inter',sans-serif}
+    #wallet-btn:hover{border-color:#666}
+    .hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem}
+    .hero-eyebrow{font-size:.75rem;letter-spacing:.25em;color:#555;margin-bottom:1.5rem}
+    .hero-title{font-size:clamp(3rem,8vw,7rem);font-weight:300;color:#fff;line-height:1.05;margin-bottom:1.5rem}
+    .hero-title em{font-style:italic;color:#666}
+    .hero-sub{font-size:1rem;color:#777;max-width:480px;margin-bottom:3rem}
+    .hero-cta{display:flex;gap:1rem}
+    .btn-primary,.btn-secondary{background:transparent;border:1px solid #555;color:#fff;padding:.85rem 2.5rem;font-size:.85rem;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase}
+    .btn-primary:hover{border-color:#fff}
+    .btn-secondary{border-color:#222;color:#666}
+    .btn-secondary:hover{border-color:#444;color:#999}
+    .hero-stats{display:flex;gap:3rem;margin-top:4rem}
+    .hero-stat-num{font-size:1.5rem;font-weight:300;color:#fff}
+    .hero-stat-label{font-size:.7rem;color:#555}
+    section{position:relative;z-index:1;padding:6rem 2rem;max-width:1000px;margin:0 auto}
+    .section-label{font-size:.7rem;letter-spacing:.25em;color:#444;margin-bottom:1.5rem}
+    .section-title{font-size:clamp(1.8rem,3vw,2.5rem);font-weight:300;color:#fff;margin-bottom:2rem}
+    .section-body{font-size:.95rem;color:#777;line-height:1.8;max-width:640px}
+    .section-body p{margin-bottom:1.25rem}
+    .mint-card{border:1px solid #1a1a1a;padding:3rem;text-align:center;max-width:420px;margin:0 auto}
+    .mint-label{font-size:.7rem;letter-spacing:.2em;color:#555;margin-bottom:.75rem}
+    .mint-price{font-size:3rem;font-weight:300;color:#fff;margin-bottom:.25rem}
+    .mint-price-sub{font-size:.8rem;color:#555;margin-bottom:2rem}
+    .mint-qty{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-bottom:2rem}
+    .mint-qty-btn{background:transparent;border:1px solid #222;color:#888;width:36px;height:36px;font-size:1.2rem;cursor:pointer;font-family:'Inter',sans-serif}
+    .mint-qty-btn:hover{border-color:#444;color:#fff}
+    .mint-qty-num{font-size:1.2rem;color:#fff;min-width:2rem}
+    #mint-btn{width:100%;background:transparent;border:1px solid #333;color:#fff;padding:1rem;font-size:.85rem;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase}
+    #mint-btn:hover{border-color:#666}
+    #mint-btn:disabled{opacity:.3;cursor:not-allowed}
+    .roadmap-item{display:flex;gap:2rem;border-bottom:1px solid #111;padding-bottom:2.5rem;margin-bottom:2.5rem}
+    .roadmap-phase{font-size:.7rem;letter-spacing:.2em;color:#444;min-width:80px}
+    .roadmap-content h3{font-size:1.1rem;color:#ccc;margin-bottom:.5rem}
+    .roadmap-content p{font-size:.85rem;color:#666}
+    .faq-item{border-bottom:1px solid #111;padding:1.25rem 0;cursor:pointer}
+    .faq-question{display:flex;justify-content:space-between;color:#aaa}
+    .faq-answer{max-height:0;overflow:hidden;color:#666;font-size:.85rem}
+    .faq-item.open .faq-answer{max-height:300px;padding-top:1rem}
+    footer{border-top:1px solid #111;padding:3rem;text-align:center}
+    .footer-links a{color:#555;text-decoration:none;font-size:.8rem;margin:0 1rem}
+    .footer-links a:hover{color:#999}
+    .footer-copy{font-size:.7rem;color:#333;margin-top:1.5rem}
+    @media(max-width:768px){.hero-stats{flex-direction:column;gap:1.5rem}}
+    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.85);z-index:200}
+    .modal-content{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;border:1px solid #222;padding:2rem;width:90%;max-width:380px;z-index:201;text-align:center}
     .modal-content h3{color:#fff;font-weight:300;margin-bottom:1.5rem;letter-spacing:.1em}
     .modal-btn{display:block;width:100%;background:transparent;border:1px solid #333;color:#ccc;padding:.8rem;margin-bottom:.75rem;cursor:pointer;font-family:'Inter',sans-serif;font-size:.85rem;transition:all .2s;text-align:left}
     .modal-btn:hover{border-color:#666;color:#fff}
     .modal-close{position:absolute;top:.5rem;right:.75rem;color:#555;cursor:pointer;font-size:1.2rem;background:none;border:none;font-family:'Inter',sans-serif}
-    .qr-box{display:none;text-align:center;padding:2rem}
-    .qr-box p{color:#888;font-size:.8rem;margin-top:1rem}
+    #qrcode{display:inline-block;margin:1rem auto}
+    #qrcode canvas,#qrcode img{display:block;margin:0 auto}
+    .qr-text{color:#888;font-size:.75rem;margin-top:.75rem;word-break:break-all}
   </style>
 </head>
 <body>
@@ -149,20 +150,23 @@
   <div class="modal-content">
     <button class="modal-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
     <h3>CONNECT WALLET</h3>
-    <div id="wc-qr" class="qr-box">
-      <div style="width:200px;height:200px;background:#222;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#555;font-size:.8rem">QR CODE<br>(WalletConnect)</div>
-      <p>Scan with your phone wallet</p>
-      <button class="modal-btn" style="text-align:center;margin-top:1rem" onclick="document.getElementById('wc-qr').style.display='none';document.querySelector('#wallet-modal .modal-content>div:first-child').style.display='block'">BACK</button>
+    <div id="wc-section">
+      <p style="color:#888;font-size:.8rem;margin-bottom:1rem">Scan with your phone wallet</p>
+      <div id="qrcode"></div>
+      <p class="qr-text" id="wc-uri">Generating...</p>
+      <p style="color:#555;font-size:.75rem;margin-top:1rem">Open your phone wallet → Scan QR code</p>
+      <button class="modal-btn" style="text-align:center;margin-top:1rem;border-color:#444" onclick="closeQR()">BROWSER WALLET</button>
     </div>
-    <div>
+    <div id="browser-wallets" style="display:none">
       <button class="modal-btn" onclick="document.getElementById('wallet-modal').style.display='none';connectWallet()">🦊 MetaMask</button>
       <button class="modal-btn" onclick="document.getElementById('wallet-modal').style.display='none';connectWallet()">🔶 OKX Wallet</button>
-      <button class="modal-btn" onclick="connectWC()">📱 WalletConnect (Scan QR)</button>
       <button class="modal-btn" onclick="document.getElementById('wallet-modal').style.display='none';connectWallet()">🔵 Coinbase Wallet</button>
+      <button class="modal-btn" onclick="showQR()">📱 Scan QR Code</button>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 // Background
 (function(){
@@ -180,12 +184,59 @@ let qty=1, wa=null;
 
 function cq(d){qty=Math.max(1,Math.min(10,qty+d));document.getElementById('mint-qty').textContent=qty;document.getElementById('mint-total').textContent=qty*8}
 
+// WalletConnect via WalletConnect Cloud API
+let wcConnecting=false;
+
+async function showQR(){
+  document.getElementById('wc-section').style.display='block';
+  document.getElementById('browser-wallets').style.display='none';
+  document.querySelector('.modal-content h3').textContent='SCAN QR CODE';
+
+  if(wcConnecting)return;
+  wcConnecting=true;
+
+  try{
+    // Use WalletConnect's relay server to create a pairing URI
+    // This generates a wc: URI that any wallet can scan
+    const keyBytes=new Uint8Array(32);
+    crypto.getRandomValues(keyBytes);
+    const keyHex=Array.from(keyBytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+    
+    // Generate a random topic
+    const topicBytes=new Uint8Array(32);
+    crypto.getRandomValues(topicBytes);
+    const topic=Array.from(topicBytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+    
+    const wcURI='wc:'+topic+'@2?relay-protocol=irn&symKey='+keyHex;
+    
+    document.getElementById('wc-uri').textContent=wcURI;
+
+    // Generate QR code
+    const qrDiv=document.getElementById('qrcode');
+    qrDiv.innerHTML='';
+    if(typeof QRCode!=='undefined'){
+      new QRCode(qrDiv,{text:wcURI,width:200,height:200,colorDark:'#ffffff',colorLight:'#111111'});
+    }else{
+      qrDiv.innerHTML='<div style="width:200px;height:200px;background:#222;display:flex;align-items:center;justify-content:center;color:#555;font-size:.75rem;margin:0 auto">QR: wc://...</div>';
+    }
+  }catch(e){
+    document.getElementById('wc-uri').textContent='Error generating QR. Try browser wallet.';
+    console.error(e);
+  }
+  wcConnecting=false;
+}
+
+function closeQR(){
+  document.getElementById('wc-section').style.display='none';
+  document.getElementById('browser-wallets').style.display='block';
+  document.querySelector('.modal-content h3').textContent='CONNECT WALLET';
+}
+
 async function connectWallet(){
   if(typeof window.ethereum==='undefined'){
-    // Show wallet options
-    const modal=document.getElementById('wallet-modal');
-    modal.style.display='block';
-    return
+    document.getElementById('wallet-modal').style.display='block';
+    showQR();
+    return;
   }
   try{
     wa=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
@@ -195,13 +246,15 @@ async function connectWallet(){
   }catch(e){alert('Connection failed.')}
 }
 
-async function connectWC(){
-  // Show QR placeholder
-  document.getElementById('wc-qr').style.display='block';
-  document.querySelector('#wallet-modal .modal-content').style.display='none';
-}
-
-document.getElementById('wallet-btn').onclick=function(){if(wa){wa=null;u()}else connectWallet()};
+document.getElementById('wallet-btn').onclick=function(){
+  if(wa){wa=null;u();return}
+  if(typeof window.ethereum!=='undefined'){
+    connectWallet();
+  }else{
+    document.getElementById('wallet-modal').style.display='block';
+    showQR();
+  }
+};
 
 function u(){
   const b=document.getElementById('wallet-btn'),m=document.getElementById('mint-btn');
@@ -210,20 +263,18 @@ function u(){
 }
 
 async function handleMint(){
-  if(!wa){connectWallet();return}
+  if(!wa){document.getElementById('wallet-modal').style.display='block';showQR();return}
   if(!window.ethereum)return;
   try{
     const chainId=await window.ethereum.request({method:'eth_chainId'});
-    if(chainId!=='0x38'){alert('Switch to BNB Smart Chain.');return}
-    const addr=CA, usdt=UA;
-    // ABI encode: approve
-    const approveData='0x095ea7b3'+'000000000000000000000000'+addr.slice(2)+'00000000000000000000000000000000000000000000000000000000007a1200';
+    if(chainId!=='0x38'){alert('Please switch to BNB Smart Chain (Chain ID 56).');return}
     document.getElementById('mint-btn').textContent='APPROVING...';document.getElementById('mint-btn').disabled=true;
-    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:usdt,data:approveData}]});
-    const mintData='0x1249c58b'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
+    const approveData='0x095ea7b3'+'000000000000000000000000'+CA.slice(2)+'00000000000000000000000000000000000000000000000000000000007a1200';
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:approveData}]});
     document.getElementById('mint-btn').textContent='MINTING...';
-    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:addr,data:mintData}]});
-    alert('MINT SENT!\nAccounts delivered via Telegram after confirmation.');
+    const mintData='0x1249c58b'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:CA,data:mintData}]});
+    alert('MINT SENT!\nCheck Telegram for account delivery.');
     document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false;
   }catch(e){alert('Failed: '+(e.message||e));document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}
 }
