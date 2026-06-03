@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 log = logging.getLogger(__name__)
 
 # ── Config ──
-RPC_URL = os.getenv('RPC_URL', 'https://eth-mainnet.g.alchemy.com/v2/demo')
+RPC_URL = os.getenv('RPC_URL', 'https://bsc-dataseed.binance.org/')
 CONTRACT_ADDRESS = os.getenv('CONTRACT_ADDRESS', '0x0000000000000000000000000000000000000000')  # FIXME
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')

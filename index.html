@@ -259,8 +259,8 @@
       'event AccountMinted(address indexed user, uint256 indexed tokenId, uint256 quantity, uint256 totalPaid, uint256 timestamp)'
     ];
 
-    // USDT contract on Ethereum mainnet
-    const USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+    // USDT on BSC
+    const USDT_ADDRESS = '0x55d398326f99059fF775485246999027B3197955';
     const USDT_ABI = [
       'function approve(address spender, uint256 amount) returns (bool)',
       'function allowance(address owner, address spender) view returns (uint256)',
@@ -348,10 +348,10 @@
         return;
       }
 
-      // Check wallet network — must be Ethereum mainnet (chainId = 1)
+      // Check wallet network — must be BSC Mainnet (chainId = 56)
       const network = await provider.getNetwork();
-      if (network.chainId !== 1n) {
-        alert('Please switch to Ethereum Mainnet in your wallet.');
+      if (network.chainId !== 56n) {
+        alert('Please switch to BNB Smart Chain Mainnet in your wallet.\nChain ID: 56');
         return;
       }
 

@@ -25,8 +25,8 @@ contract RegFactory is ERC721Enumerable, Ownable, ReentrancyGuard {
     string public baseURI;
     bool public mintActive;
 
-    // USDT on Ethereum mainnet
-    address constant USDT_MAINNET = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    // USDT on BSC (Binance Smart Chain)
+    address constant USDT_BSC = 0x55d398326f99059fF775485246999027B3197955;
 
     // ── Events ──
     event AccountMinted(
@@ -43,7 +43,7 @@ contract RegFactory is ERC721Enumerable, Ownable, ReentrancyGuard {
         uint256 _maxSupply,
         uint256 _maxPerWallet
     ) ERC721("Reg Factory", "RFCT") Ownable(msg.sender) {
-        usdt = IERC20(USDT_MAINNET);
+        usdt = IERC20(USDT_BSC);
         price = _price;           // e.g. 8 USDT = 8000000 (6 decimals)
         maxSupply = _maxSupply;   // e.g. 1000
         maxPerWallet = _maxPerWallet; // e.g. 10
