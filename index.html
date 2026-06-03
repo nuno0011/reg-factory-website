@@ -246,7 +246,27 @@
     const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.1 });
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-    // ── Mint Qty ──
+    // ── Contract Config ──
+    // Deployed contract address (update after deploy)
+    const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // FIXME: deploy then replace
+    const CONTRACT_ABI = [
+      'function mint(uint256 _quantity) external',
+      'function price() view returns (uint256)',
+      'function totalMinted() view returns (uint256)',
+      'function maxSupply() view returns (uint256)',
+      'function balanceOf(address) view returns (uint256)',
+      'function mintActive() view returns (bool)',
+      'event AccountMinted(address indexed user, uint256 indexed tokenId, uint256 quantity, uint256 totalPaid, uint256 timestamp)'
+    ];
+
+    // USDT contract on Ethereum mainnet
+    const USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+    const USDT_ABI = [
+      'function approve(address spender, uint256 amount) returns (bool)',
+      'function allowance(address owner, address spender) view returns (uint256)',
+      'function decimals() view returns (uint8)',
+      'function balanceOf(address) view returns (uint256)'
+    ];
     let qty = 1;
     const PRICE = 8;
     function changeQty(delta) { qty = Math.max(1, Math.min(10, qty + delta)); document.getElementById('mint-qty').textContent = qty; document.getElementById('mint-total').textContent = qty * PRICE; }
@@ -322,20 +342,68 @@
     }
 
     // ── Mint Handler ──
-    function handleMint() {
+    async function handleMint() {
       if (!walletAddress) {
         connectWallet();
         return;
       }
-      const btn = document.getElementById('mint-btn');
-      btn.textContent = 'MINTING...';
-      btn.disabled = true;
-      const totalUsdt = qty * PRICE;
-      setTimeout(() => {
-        alert(`Mint initiated from ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}\nTotal: ${totalUsdt} USDT\n\nPayment flow ready — connect to OKX wallet to proceed.`);
+
+      // Check wallet network — must be Ethereum mainnet (chainId = 1)
+      const network = await provider.getNetwork();
+      if (network.chainId !== 1n) {
+        alert('Please switch to Ethereum Mainnet in your wallet.');
+        return;
+      }
+
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
+
+      try {
+        // 1. Get price from contract (6 decimals for USDT)
+        const unitPrice = await contract.price();
+        const totalCost = unitPrice * BigInt(qty);
+
+        // 2. Check USDT allowance
+        const allowance = await usdtContract.allowance(walletAddress, CONTRACT_ADDRESS);
+        if (allowance < totalCost) {
+          // Need to approve first
+          const btn = document.getElementById('mint-btn');
+          btn.textContent = 'APPROVING USDT...';
+          btn.disabled = true;
+
+          const approveTx = await usdtContract.approve(CONTRACT_ADDRESS, totalCost);
+          await approveTx.wait();
+        }
+
+        // 3. Mint
+        const btn = document.getElementById('mint-btn');
+        btn.textContent = 'MINTING...';
+        btn.disabled = true;
+
+        const tx = await contract.mint(qty);
+        const receipt = await tx.wait();
+
+        // 4. Success — find AccountMinted event
+        const event = receipt.logs
+          .map(log => {
+            try { return contract.interface.parseLog(log); } catch { return null; }
+          })
+          .filter(e => e && e.name === 'AccountMinted')[0];
+
+        const tokenId = event ? event.args.tokenId.toString() : '?';
+        alert(`✓ MINT SUCCESSFUL!\n\nToken ID: ${tokenId}\nQuantity: ${qty}\nTotal Paid: ${qty * 8} USDT\n\nYour accounts will be delivered via Telegram shortly.`);
+
         btn.textContent = 'MINT';
         btn.disabled = false;
-      }, 2000);
+
+      } catch (err) {
+        console.error('Mint failed:', err);
+        alert(`Mint failed: ${err.message || err}`);
+        const btn = document.getElementById('mint-btn');
+        btn.textContent = 'MINT';
+        btn.disabled = false;
+      }
     }
 
     updateUI();
