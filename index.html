@@ -284,10 +284,10 @@ async function handleMint(){
         }else{alert('Please switch to BNB Smart Chain manually.');return}
       }
     }
-    // Free mint — just sign to prove ownership, only pay gas
-    document.getElementById('mint-btn').textContent='SIGNING...';document.getElementById('mint-btn').disabled=true;
-    const msg='Reg Factory Mint #'+Date.now()+'\n\nSign to mint '+qty+' account(s).\nOnly gas fee required — no payment.';
-    await window.ethereum.request({method:'personal_sign',params:[msg,wa]});
+    // Mint via contract — user pays gas, contract records wallet
+    document.getElementById('mint-btn').textContent='MINTING...';document.getElementById('mint-btn').disabled=true;
+    const mintData='0xa0712d68'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:CA,data:mintData}]});
     alert('PAYMENT SENT!\nAccounts will be delivered via Telegram.');
     document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false;
   }catch(e){alert('Failed: '+(e.message||e));document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}
