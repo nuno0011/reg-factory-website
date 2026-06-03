@@ -61,6 +61,14 @@
     .footer-links a:hover { color: #999; }
     .footer-copy { font-size: 0.7rem; color: #333; margin-top: 1.5rem; }
     @media (max-width: 768px) { .hero-stats { flex-direction: column; gap: 1.5rem; } }
+    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.8);z-index:200}
+    .modal-content{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;border:1px solid #222;padding:2rem;width:90%;max-width:360px;z-index:201;text-align:center}
+    .modal-content h3{color:#fff;font-weight:300;margin-bottom:1.5rem;letter-spacing:.1em}
+    .modal-btn{display:block;width:100%;background:transparent;border:1px solid #333;color:#ccc;padding:.8rem;margin-bottom:.75rem;cursor:pointer;font-family:'Inter',sans-serif;font-size:.85rem;transition:all .2s;text-align:left}
+    .modal-btn:hover{border-color:#666;color:#fff}
+    .modal-close{position:absolute;top:.5rem;right:.75rem;color:#555;cursor:pointer;font-size:1.2rem;background:none;border:none;font-family:'Inter',sans-serif}
+    .qr-box{display:none;text-align:center;padding:2rem}
+    .qr-box p{color:#888;font-size:.8rem;margin-top:1rem}
   </style>
 </head>
 <body>
@@ -137,7 +145,24 @@
   <div class="footer-copy">REG FACTORY · 2025</div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+<div class="modal-overlay" id="wallet-modal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-content">
+    <button class="modal-close" onclick="document.getElementById('wallet-modal').style.display='none'">✕</button>
+    <h3>CONNECT WALLET</h3>
+    <div id="wc-qr" class="qr-box">
+      <div style="width:200px;height:200px;background:#222;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#555;font-size:.8rem">QR CODE<br>(WalletConnect)</div>
+      <p>Scan with your phone wallet</p>
+      <button class="modal-btn" style="text-align:center;margin-top:1rem" onclick="document.getElementById('wc-qr').style.display='none';document.querySelector('#wallet-modal .modal-content>div:first-child').style.display='block'">BACK</button>
+    </div>
+    <div>
+      <button class="modal-btn" onclick="document.getElementById('wallet-modal').style.display='none';connectWallet()">🦊 MetaMask</button>
+      <button class="modal-btn" onclick="document.getElementById('wallet-modal').style.display='none';connectWallet()">🔶 OKX Wallet</button>
+      <button class="modal-btn" onclick="connectWC()">📱 WalletConnect (Scan QR)</button>
+      <button class="modal-btn" onclick="document.getElementById('wallet-modal').style.display='none';connectWallet()">🔵 Coinbase Wallet</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // Background
 (function(){
@@ -151,45 +176,54 @@
 })();
 
 const CA='0xAF73362CC150eb9d92c2abd84c1F88D4DB7dc0E5', UA='0x55d398326f99059fF775485246999027B3197955';
-let qty=1, wa=null, pr=null;
+let qty=1, wa=null;
+
 function cq(d){qty=Math.max(1,Math.min(10,qty+d));document.getElementById('mint-qty').textContent=qty;document.getElementById('mint-total').textContent=qty*8}
 
 async function connectWallet(){
-  if(typeof window.ethereum==='undefined'){alert('Install MetaMask or OKX Wallet.');return}
+  if(typeof window.ethereum==='undefined'){
+    // Show wallet options
+    const modal=document.getElementById('wallet-modal');
+    modal.style.display='block';
+    return
+  }
   try{
-    pr=new ethers.BrowserProvider(window.ethereum);
-    wa=(await pr.send('eth_requestAccounts',[]))[0];
+    wa=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
     u();
-    window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;pr=wa?pr:null;u()});
+    window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;u()});
     window.ethereum.on('chainChanged',()=>location.reload());
-  }catch(e){console.error(e)}
+  }catch(e){alert('Connection failed.')}
 }
 
-document.getElementById('wallet-btn').onclick=function(){if(wa){wa=null;pr=null;u()}else connectWallet()};
+async function connectWC(){
+  // Show QR placeholder
+  document.getElementById('wc-qr').style.display='block';
+  document.querySelector('#wallet-modal .modal-content').style.display='none';
+}
+
+document.getElementById('wallet-btn').onclick=function(){if(wa){wa=null;u()}else connectWallet()};
 
 function u(){
   const b=document.getElementById('wallet-btn'),m=document.getElementById('mint-btn');
-  if(wa){b.textContent=wa.slice(0,6)+'...'+wa.slice(-4);b.style.borderColor='#4a4';m.textContent='MINT';m.disabled=false}
-  else{b.textContent='CONNECT';b.style.borderColor='#333';m.textContent='CONNECT WALLET';m.disabled=true}
+  if(wa){b.textContent=wa.slice(0,6)+'...'+wa.slice(-4);b.style.borderColor='#4a4';m.disabled=false}
+  else{b.textContent='CONNECT';b.style.borderColor='#333';m.disabled=true}
 }
 
 async function handleMint(){
   if(!wa){connectWallet();return}
-  if(!pr)pr=new ethers.BrowserProvider(window.ethereum);
-  const n=await pr.getNetwork();
-  if(n.chainId!==56n){alert('Switch to BNB Smart Chain.');return}
-  const signer=await pr.getSigner();
-  const ct=new ethers.Contract(CA,['function mint(uint256) external','function price() view returns (uint256)'],signer);
-  const ut=new ethers.Contract(UA,['function approve(address,uint256) returns (bool)','function allowance(address,address) view returns (uint256)'],signer);
+  if(!window.ethereum)return;
   try{
-    const up=await ct.price(),tc=up*BigInt(qty);
-    if((await ut.allowance(wa,CA))<tc){
-      document.getElementById('mint-btn').textContent='APPROVING...';document.getElementById('mint-btn').disabled=true;
-      await(await ut.approve(CA,tc)).wait();
-    }
-    document.getElementById('mint-btn').textContent='MINTING...';document.getElementById('mint-btn').disabled=true;
-    await(await ct.mint(qty)).wait();
-    alert('MINT SUCCESSFUL!\nAccounts delivered via Telegram.');
+    const chainId=await window.ethereum.request({method:'eth_chainId'});
+    if(chainId!=='0x38'){alert('Switch to BNB Smart Chain.');return}
+    const addr=CA, usdt=UA;
+    // ABI encode: approve
+    const approveData='0x095ea7b3'+'000000000000000000000000'+addr.slice(2)+'00000000000000000000000000000000000000000000000000000000007a1200';
+    document.getElementById('mint-btn').textContent='APPROVING...';document.getElementById('mint-btn').disabled=true;
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:usdt,data:approveData}]});
+    const mintData='0x1249c58b'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
+    document.getElementById('mint-btn').textContent='MINTING...';
+    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:addr,data:mintData}]});
+    alert('MINT SENT!\nAccounts delivered via Telegram after confirmation.');
     document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false;
   }catch(e){alert('Failed: '+(e.message||e));document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}
 }
