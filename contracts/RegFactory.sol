@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
     function decimals() external view returns (uint8);
 }
 

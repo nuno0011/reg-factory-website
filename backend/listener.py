@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 # ── Config ──
 RPC_URL = os.getenv('RPC_URL', 'https://bsc-dataseed.binance.org/')
-CONTRACT_ADDRESS = os.getenv('CONTRACT_ADDRESS', '0x0000000000000000000000000000000000000000')  # FIXME
+CONTRACT_ADDRESS = os.getenv('CONTRACT_ADDRESS', '0xAF73362CC150eb9d92c2abd84c1F88D4DB7dc0E5')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
 POLL_INTERVAL = int(os.getenv('POLL_INTERVAL', '30'))  # seconds
