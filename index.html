@@ -7,113 +7,73 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- ethers -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@web3modal/ethers@5.0.21/dist/web3modal-ethers.min.js"></script>
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0a0a;
-      color: #d4d4d4;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-    #bg-canvas {
-      position: fixed; top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: 0; pointer-events: none; opacity: 0.4;
-    }
-    nav {
-      position: fixed; top: 0; left: 0; right: 0;
-      z-index: 100; padding: 1.5rem 3rem;
-      display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, transparent 100%);
-    }
-    .nav-logo { font-weight: 600; font-size: 1.1rem; letter-spacing: 0.1em; color: #fff; }
-    .nav-links { display: flex; gap: 2rem; align-items: center; }
-    .nav-links a { color: #888; text-decoration: none; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.05em; transition: color 0.2s; }
-    .nav-links a:hover { color: #fff; }
-    .nav-connect {
-      background: transparent; border: 1px solid #333; color: #fff;
-      padding: 0.5rem 1.25rem; font-size: 0.8rem; letter-spacing: 0.08em;
-      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
-    }
-    .nav-connect:hover { border-color: #666; background: rgba(255,255,255,0.05); }
-    .hero {
-      position: relative; z-index: 1;
-      min-height: 100vh; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; text-align: center;
-      padding: 8rem 2rem 4rem;
-    }
-    .hero-eyebrow { font-size: 0.75rem; letter-spacing: 0.25em; color: #555; text-transform: uppercase; margin-bottom: 1.5rem; }
-    .hero-title { font-size: clamp(3rem, 8vw, 7rem); font-weight: 300; letter-spacing: -0.03em; color: #fff; line-height: 1.05; margin-bottom: 1.5rem; }
-    .hero-title em { font-style: italic; color: #666; }
-    .hero-sub { font-size: 1rem; color: #777; max-width: 480px; margin-bottom: 3rem; font-weight: 300; line-height: 1.7; }
-    .hero-cta { display: flex; gap: 1rem; align-items: center; }
-    .btn-primary {
-      background: transparent; border: 1px solid #555; color: #fff;
-      padding: 0.85rem 2.5rem; font-size: 0.85rem; letter-spacing: 0.1em;
-      cursor: pointer; transition: all 0.25s; font-family: 'Inter', sans-serif; text-transform: uppercase;
-    }
-    .btn-primary:hover { border-color: #fff; background: rgba(255,255,255,0.06); }
-    .btn-secondary {
-      background: transparent; border: 1px solid #222; color: #666;
-      padding: 0.85rem 2.5rem; font-size: 0.85rem; letter-spacing: 0.1em;
-      cursor: pointer; transition: all 0.25s; font-family: 'Inter', sans-serif; text-transform: uppercase;
-    }
-    .btn-secondary:hover { border-color: #444; color: #999; }
-    .hero-stats { display: flex; gap: 3rem; margin-top: 4rem; }
-    .hero-stat { text-align: center; }
-    .hero-stat-num { font-size: 1.5rem; font-weight: 300; color: #fff; }
-    .hero-stat-label { font-size: 0.7rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.25rem; }
-    section { position: relative; z-index: 1; padding: 6rem 2rem; max-width: 1000px; margin: 0 auto; }
-    .section-label { font-size: 0.7rem; letter-spacing: 0.25em; color: #444; text-transform: uppercase; margin-bottom: 1.5rem; }
-    .section-title { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 300; color: #fff; margin-bottom: 2rem; letter-spacing: -0.02em; }
-    .section-body { font-size: 0.95rem; color: #777; line-height: 1.8; max-width: 640px; }
-    .section-body p { margin-bottom: 1.25rem; }
-    .mint-card { border: 1px solid #1a1a1a; padding: 3rem; text-align: center; max-width: 420px; margin: 0 auto; }
-    .mint-label { font-size: 0.7rem; letter-spacing: 0.2em; color: #555; text-transform: uppercase; margin-bottom: 0.75rem; }
-    .mint-price { font-size: 3rem; font-weight: 300; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
-    .mint-price-sub { font-size: 0.8rem; color: #555; margin-bottom: 2rem; }
-    .mint-qty { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; }
-    .mint-qty-btn { background: transparent; border: 1px solid #222; color: #888; width: 36px; height: 36px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-    .mint-qty-btn:hover { border-color: #444; color: #fff; }
-    .mint-qty-num { font-size: 1.2rem; color: #fff; font-weight: 300; min-width: 2rem; }
-    .mint-btn { width: 100%; background: transparent; border: 1px solid #333; color: #fff; padding: 1rem; font-size: 0.85rem; letter-spacing: 0.1em; cursor: pointer; transition: all 0.25s; font-family: 'Inter', sans-serif; text-transform: uppercase; }
-    .mint-btn:hover { border-color: #666; background: rgba(255,255,255,0.04); }
-    .mint-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .roadmap-grid { display: flex; flex-direction: column; gap: 2.5rem; margin-top: 3rem; }
-    .roadmap-item { display: flex; gap: 2rem; align-items: flex-start; border-bottom: 1px solid #111; padding-bottom: 2.5rem; }
-    .roadmap-phase { font-size: 0.7rem; letter-spacing: 0.2em; color: #444; text-transform: uppercase; min-width: 80px; font-weight: 500; }
-    .roadmap-content h3 { font-size: 1.1rem; font-weight: 400; color: #ccc; margin-bottom: 0.5rem; }
-    .roadmap-content p { font-size: 0.85rem; color: #666; line-height: 1.7; }
-    .faq-item { border-bottom: 1px solid #111; padding: 1.25rem 0; cursor: pointer; }
-    .faq-question { display: flex; justify-content: space-between; align-items: center; color: #aaa; font-size: 0.9rem; font-weight: 400; }
-    .faq-question span { font-size: 1.2rem; color: #444; transition: transform 0.2s; }
-    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; color: #666; font-size: 0.85rem; line-height: 1.7; }
-    .faq-item.open .faq-answer { max-height: 300px; padding-top: 1rem; }
-    .faq-item.open .faq-question span { transform: rotate(45deg); }
-    footer { position: relative; z-index: 1; border-top: 1px solid #111; padding: 3rem; text-align: center; }
-    .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
-    .footer-links a { color: #555; text-decoration: none; font-size: 0.8rem; letter-spacing: 0.05em; transition: color 0.2s; }
-    .footer-links a:hover { color: #999; }
-    .footer-copy { font-size: 0.7rem; color: #333; letter-spacing: 0.05em; }
-    @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      .nav-links a { display: none; }
-      .nav-links a:last-child { display: block; }
-      .hero-stats { flex-direction: column; gap: 1.5rem; }
-      .mint-card { padding: 2rem 1.5rem; }
-      .roadmap-item { flex-direction: column; gap: 0.5rem; }
-    }
-    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.8s ease, transform 0.8s ease; }
-    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#d4d4d4;line-height:1.6;-webkit-font-smoothing:antialiased}
+    #bg-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:.4}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.5rem 3rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(10,10,10,.95) 0%,transparent 100%)}
+    .nav-logo{font-weight:600;font-size:1.1rem;letter-spacing:.1em;color:#fff}
+    .nav-links{display:flex;gap:2rem;align-items:center}
+    .nav-links a{color:#888;text-decoration:none;font-size:.85rem;font-weight:400;letter-spacing:.05em;transition:color .2s}
+    .nav-links a:hover{color:#fff}
+    .nav-connect{background:transparent;border:1px solid #333;color:#fff;padding:.5rem 1.25rem;font-size:.8rem;letter-spacing:.08em;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+    .nav-connect:hover{border-color:#666;background:rgba(255,255,255,.05)}
+    .hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 2rem 4rem}
+    .hero-eyebrow{font-size:.75rem;letter-spacing:.25em;color:#555;text-transform:uppercase;margin-bottom:1.5rem}
+    .hero-title{font-size:clamp(3rem,8vw,7rem);font-weight:300;letter-spacing:-.03em;color:#fff;line-height:1.05;margin-bottom:1.5rem}
+    .hero-title em{font-style:italic;color:#666}
+    .hero-sub{font-size:1rem;color:#777;max-width:480px;margin-bottom:3rem;font-weight:300;line-height:1.7}
+    .hero-cta{display:flex;gap:1rem;align-items:center}
+    .btn-primary{background:transparent;border:1px solid #555;color:#fff;padding:.85rem 2.5rem;font-size:.85rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;font-family:'Inter',sans-serif;text-transform:uppercase}
+    .btn-primary:hover{border-color:#fff;background:rgba(255,255,255,.06)}
+    .btn-secondary{background:transparent;border:1px solid #222;color:#666;padding:.85rem 2.5rem;font-size:.85rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;font-family:'Inter',sans-serif;text-transform:uppercase}
+    .btn-secondary:hover{border-color:#444;color:#999}
+    .hero-stats{display:flex;gap:3rem;margin-top:4rem}
+    .hero-stat{text-align:center}
+    .hero-stat-num{font-size:1.5rem;font-weight:300;color:#fff}
+    .hero-stat-label{font-size:.7rem;color:#555;letter-spacing:.1em;text-transform:uppercase;margin-top:.25rem}
+    section{position:relative;z-index:1;padding:6rem 2rem;max-width:1000px;margin:0 auto}
+    .section-label{font-size:.7rem;letter-spacing:.25em;color:#444;text-transform:uppercase;margin-bottom:1.5rem}
+    .section-title{font-size:clamp(1.8rem,3vw,2.5rem);font-weight:300;color:#fff;margin-bottom:2rem;letter-spacing:-.02em}
+    .section-body{font-size:.95rem;color:#777;line-height:1.8;max-width:640px}
+    .section-body p{margin-bottom:1.25rem}
+    .mint-card{border:1px solid #1a1a1a;padding:3rem;text-align:center;max-width:420px;margin:0 auto}
+    .mint-label{font-size:.7rem;letter-spacing:.2em;color:#555;text-transform:uppercase;margin-bottom:.75rem}
+    .mint-price{font-size:3rem;font-weight:300;color:#fff;letter-spacing:-.02em;margin-bottom:.25rem}
+    .mint-price-sub{font-size:.8rem;color:#555;margin-bottom:2rem}
+    .mint-qty{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-bottom:2rem}
+    .mint-qty-btn{background:transparent;border:1px solid #222;color:#888;width:36px;height:36px;font-size:1.2rem;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+    .mint-qty-btn:hover{border-color:#444;color:#fff}
+    .mint-qty-num{font-size:1.2rem;color:#fff;font-weight:300;min-width:2rem}
+    .mint-btn{width:100%;background:transparent;border:1px solid #333;color:#fff;padding:1rem;font-size:.85rem;letter-spacing:.1em;cursor:pointer;transition:all .25s;font-family:'Inter',sans-serif;text-transform:uppercase}
+    .mint-btn:hover{border-color:#666;background:rgba(255,255,255,.04)}
+    .mint-btn:disabled{opacity:.3;cursor:not-allowed}
+    .roadmap-grid{display:flex;flex-direction:column;gap:2.5rem;margin-top:3rem}
+    .roadmap-item{display:flex;gap:2rem;align-items:flex-start;border-bottom:1px solid #111;padding-bottom:2.5rem}
+    .roadmap-phase{font-size:.7rem;letter-spacing:.2em;color:#444;text-transform:uppercase;min-width:80px;font-weight:500}
+    .roadmap-content h3{font-size:1.1rem;font-weight:400;color:#ccc;margin-bottom:.5rem}
+    .roadmap-content p{font-size:.85rem;color:#666;line-height:1.7}
+    .faq-item{border-bottom:1px solid #111;padding:1.25rem 0;cursor:pointer}
+    .faq-question{display:flex;justify-content:space-between;align-items:center;color:#aaa;font-size:.9rem;font-weight:400}
+    .faq-question span{font-size:1.2rem;color:#444;transition:transform .2s}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height .3s ease;color:#666;font-size:.85rem;line-height:1.7}
+    .faq-item.open .faq-answer{max-height:300px;padding-top:1rem}
+    .faq-item.open .faq-question span{transform:rotate(45deg)}
+    footer{position:relative;z-index:1;border-top:1px solid #111;padding:3rem;text-align:center}
+    .footer-links{display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem}
+    .footer-links a{color:#555;text-decoration:none;font-size:.8rem;letter-spacing:.05em;transition:color .2s}
+    .footer-links a:hover{color:#999}
+    .footer-copy{font-size:.7rem;color:#333;letter-spacing:.05em}
+    @media(max-width:768px){nav{padding:1rem 1.5rem}.nav-links a{display:none}.nav-links a:last-child{display:block}.hero-stats{flex-direction:column;gap:1.5rem}.mint-card{padding:2rem 1.5rem}.roadmap-item{flex-direction:column;gap:.5rem}}
+    .fade-in{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease}
+    .fade-in.visible{opacity:1;transform:translateY(0)}
   </style>
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
-
   <nav>
     <div class="nav-logo">REG FACTORY</div>
     <div class="nav-links">
@@ -124,7 +84,6 @@
       <button class="nav-connect" id="wallet-btn">CONNECT</button>
     </div>
   </nav>
-
   <section class="hero">
     <div class="hero-eyebrow">GENERATIVE · AUTOMATION · INFRASTRUCTURE</div>
     <h1 class="hero-title">ACCOUNT<br /><em>FACTORY</em></h1>
@@ -139,7 +98,6 @@
       <div class="hero-stat"><div class="hero-stat-num">0%</div><div class="hero-stat-label">Fee</div></div>
     </div>
   </section>
-
   <section id="about">
     <div class="section-label">· 001 · ABOUT</div>
     <h2 class="section-title">Built to scale.<br />Designed to persist.</h2>
@@ -149,7 +107,6 @@
       <p>Each mint is an entry. Another presence. Another account ready to deploy.</p>
     </div>
   </section>
-
   <section id="mint">
     <div class="section-label">· 002 · MINT</div>
     <h2 class="section-title" style="text-align:center;">Acquire an Entry</h2>
@@ -166,7 +123,6 @@
       <button class="mint-btn" id="mint-btn" onclick="handleMint()">CONNECT WALLET</button>
     </div>
   </section>
-
   <section id="roadmap">
     <div class="section-label">· 003 · ROADMAP</div>
     <h2 class="section-title">The Path</h2>
@@ -177,32 +133,15 @@
       <div class="roadmap-item" style="border-bottom:none;padding-bottom:0;"><div class="roadmap-phase">PHASE 4</div><div class="roadmap-content"><h3>Infrastructure as a Service</h3><p>API access for partners. GPU-Hunter integration for on-demand compute. Custom platform support via plugin system.</p></div></div>
     </div>
   </section>
-
   <section id="faq">
     <div class="section-label">· 004 · FAQ</div>
     <h2 class="section-title">Common Questions</h2>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">What accounts do I get?<span>+</span></div>
-      <div class="faq-answer">Each mint delivers a ready-to-use account bundle including ChatGPT, Claude, and Grok — all registered under a single Outlook mailbox. Cookies are exported and accessible immediately.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">How are accounts generated?<span>+</span></div>
-      <div class="faq-answer">The pipeline uses BitBrowser for unique browser fingerprints, Clash Verge for clean proxy rotation, and automated CAPTCHA solving — fully headless and unattended.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">What payment do you accept?<span>+</span></div>
-      <div class="faq-answer">USDT (TRC-20). After minting, you'll receive a payment address and QR code. Once the transaction is confirmed on-chain, your account credentials are delivered automatically via the dashboard and Telegram.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Can I run this myself?<span>+</span></div>
-      <div class="faq-answer">Yes. The full source code is open on GitHub. Clone it, configure your environment, and you're running. The mint is for those who prefer a turnkey solution.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Is this legal?<span>+</span></div>
-      <div class="faq-answer">This tool is provided for educational and authorized testing purposes only. Users are responsible for compliance with applicable terms of service.</div>
-    </div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question">What accounts do I get?<span>+</span></div><div class="faq-answer">Each mint delivers a ready-to-use account bundle including ChatGPT, Claude, and Grok — all registered under a single Outlook mailbox. Cookies are exported and accessible immediately.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question">How are accounts generated?<span>+</span></div><div class="faq-answer">The pipeline uses BitBrowser for unique browser fingerprints, Clash Verge for clean proxy rotation, and automated CAPTCHA solving — fully headless and unattended.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question">What payment do you accept?<span>+</span></div><div class="faq-answer">USDT (TRC-20). After minting, you'll receive a payment address and QR code. Once the transaction is confirmed on-chain, your account credentials are delivered automatically via the dashboard and Telegram.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question">Can I run this myself?<span>+</span></div><div class="faq-answer">Yes. The full source code is open on GitHub. Clone it, configure your environment, and you're running. The mint is for those who prefer a turnkey solution.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question">Is this legal?<span>+</span></div><div class="faq-answer">This tool is provided for educational and authorized testing purposes only. Users are responsible for compliance with applicable terms of service.</div></div>
   </section>
-
   <footer>
     <div class="footer-links">
       <a href="https://github.com/tiantianGPU/reg-factory" target="_blank">GITHUB</a>
@@ -211,201 +150,17 @@
     </div>
     <div class="footer-copy">REG FACTORY · 2025</div>
   </footer>
-
   <script>
-    // ── Background Canvas ──
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let w, h, particles = [];
-    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-    resize();
-    window.addEventListener('resize', resize);
-    class Particle {
-      constructor() { this.x = Math.random() * w; this.y = Math.random() * h; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.r = Math.random() * 1.5 + 0.5; this.a = Math.random() * 0.4 + 0.1; }
-      update() { this.x += this.vx; this.y += this.vy; if (this.x < 0) this.x = w; if (this.x > w) this.x = 0; if (this.y < 0) this.y = h; if (this.y > h) this.y = 0; }
-      draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${this.a})`; ctx.fill(); }
-    }
-    for (let i = 0; i < 80; i++) particles.push(new Particle());
-    function animate() {
-      ctx.clearRect(0, 0, w, h);
-      particles.forEach(p => { p.update(); p.draw(); });
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(255,255,255,${0.06 * (1 - dist / 120)})`; ctx.lineWidth = 0.5; ctx.stroke(); }
-        }
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
-
-    // ── Scroll Animation ──
-    const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-
-    // ── Contract Config ──
-    // Deployed contract address (update after deploy)
-    const CONTRACT_ADDRESS = '0xAF73362CC150eb9d92c2abd84c1F88D4DB7dc0E5';
-    const CONTRACT_ABI = [
-      'function mint(uint256 _quantity) external',
-      'function price() view returns (uint256)',
-      'function totalMinted() view returns (uint256)',
-      'function maxSupply() view returns (uint256)',
-      'function balanceOf(address) view returns (uint256)',
-      'function mintActive() view returns (bool)',
-      'event AccountMinted(address indexed user, uint256 indexed tokenId, uint256 quantity, uint256 totalPaid, uint256 timestamp)'
-    ];
-
-    // USDT on BSC
-    const USDT_ADDRESS = '0x55d398326f99059fF775485246999027B3197955';
-    const USDT_ABI = [
-      'function approve(address spender, uint256 amount) returns (bool)',
-      'function allowance(address owner, address spender) view returns (uint256)',
-      'function decimals() view returns (uint8)',
-      'function balanceOf(address) view returns (uint256)'
-    ];
-    let qty = 1;
-    const PRICE = 8;
-    function changeQty(delta) { qty = Math.max(1, Math.min(10, qty + delta)); document.getElementById('mint-qty').textContent = qty; document.getElementById('mint-total').textContent = qty * PRICE; }
-
-    // ── FAQ ──
-    function toggleFaq(el) { el.classList.toggle('open'); }
-
-    // ── Wallet Connect (MetaMask / OKX / any EIP-1193) ──
-    let walletAddress = null;
-    let provider = null;
-
-    function isWalletInstalled() {
-      return typeof window.ethereum !== 'undefined';
-    }
-
-    async function connectWallet() {
-      if (!isWalletInstalled()) {
-        alert('No wallet found. Please install MetaMask or OKX Wallet.\n\nDesktop: chrome.google.com/webstore/detail/metamask');
-        return;
-      }
-      try {
-        provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send('eth_requestAccounts', []);
-        walletAddress = accounts[0];
-        updateUI();
-
-        // Listen for account changes
-        window.ethereum.on('accountsChanged', (accs) => {
-          if (accs.length === 0) {
-            walletAddress = null;
-            provider = null;
-          } else {
-            walletAddress = accs[0];
-          }
-          updateUI();
-        });
-
-        // Listen for chain changes
-        window.ethereum.on('chainChanged', () => { window.location.reload(); });
-      } catch (err) {
-        console.error('Connection failed:', err);
-      }
-    }
-
-    async function disconnectWallet() {
-      walletAddress = null;
-      provider = null;
-      updateUI();
-    }
-
-    document.getElementById('wallet-btn').addEventListener('click', () => {
-      if (walletAddress) {
-        disconnectWallet();
-      } else {
-        connectWallet();
-      }
-    });
-
-    function updateUI() {
-      const btn = document.getElementById('wallet-btn');
-      const mintBtn = document.getElementById('mint-btn');
-      if (walletAddress) {
-        btn.textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-        btn.style.borderColor = '#4a4';
-        mintBtn.textContent = 'MINT';
-        mintBtn.disabled = false;
-      } else {
-        btn.textContent = 'CONNECT';
-        btn.style.borderColor = '#333';
-        mintBtn.textContent = 'CONNECT WALLET';
-        mintBtn.disabled = true;
-      }
-    }
-
-    // ── Mint Handler ──
-    async function handleMint() {
-      if (!walletAddress) {
-        connectWallet();
-        return;
-      }
-
-      // Check wallet network — must be BSC Mainnet (chainId = 56)
-      const network = await provider.getNetwork();
-      if (network.chainId !== 56n) {
-        alert('Please switch to BNB Smart Chain Mainnet in your wallet.\nChain ID: 56');
-        return;
-      }
-
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
-
-      try {
-        // 1. Get price from contract (6 decimals for USDT)
-        const unitPrice = await contract.price();
-        const totalCost = unitPrice * BigInt(qty);
-
-        // 2. Check USDT allowance
-        const allowance = await usdtContract.allowance(walletAddress, CONTRACT_ADDRESS);
-        if (allowance < totalCost) {
-          // Need to approve first
-          const btn = document.getElementById('mint-btn');
-          btn.textContent = 'APPROVING USDT...';
-          btn.disabled = true;
-
-          const approveTx = await usdtContract.approve(CONTRACT_ADDRESS, totalCost);
-          await approveTx.wait();
-        }
-
-        // 3. Mint
-        const btn = document.getElementById('mint-btn');
-        btn.textContent = 'MINTING...';
-        btn.disabled = true;
-
-        const tx = await contract.mint(qty);
-        const receipt = await tx.wait();
-
-        // 4. Success — find AccountMinted event
-        const event = receipt.logs
-          .map(log => {
-            try { return contract.interface.parseLog(log); } catch { return null; }
-          })
-          .filter(e => e && e.name === 'AccountMinted')[0];
-
-        const tokenId = event ? event.args.tokenId.toString() : '?';
-        alert(`✓ MINT SUCCESSFUL!\n\nToken ID: ${tokenId}\nQuantity: ${qty}\nTotal Paid: ${qty * 8} USDT\n\nYour accounts will be delivered via Telegram shortly.`);
-
-        btn.textContent = 'MINT';
-        btn.disabled = false;
-
-      } catch (err) {
-        console.error('Mint failed:', err);
-        alert(`Mint failed: ${err.message || err}`);
-        const btn = document.getElementById('mint-btn');
-        btn.textContent = 'MINT';
-        btn.disabled = false;
-      }
-    }
-
-    updateUI();
+    const c=document.getElementById('bg-canvas'),x=c.getContext('2d');let w,h,p=[];function rs(){w=c.width=innerWidth;h=c.height=innerHeight}rs();addEventListener('resize',rs);class P{constructor(){this.x=Math.random()*w;this.y=Math.random()*h;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;this.r=Math.random()*1.5+.5;this.a=Math.random()*.4+.1}update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0)this.x=w;if(this.x>w)this.x=0;if(this.y<0)this.y=h;if(this.y>h)this.y=0}draw(){x.beginPath();x.arc(this.x,this.y,this.r,0,Math.PI*2);x.fillStyle=`rgba(255,255,255,${this.a})`;x.fill()}}for(let i=0;i<80;i++)p.push(new P());(function an(){x.clearRect(0,0,w,h);p.forEach(q=>{q.update();q.draw()});for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,ds=Math.sqrt(dx*dx+dy*dy);if(ds<120){x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(p[j].x,p[j].y);x.strokeStyle=`rgba(255,255,255,${.06*(1-ds/120)})`;x.lineWidth=.5;x.stroke()}}requestAnimationFrame(an)})();
+    const obs=new IntersectionObserver(e=>{e.forEach(e=>e.isIntersecting&&e.target.classList.add('visible'))},{threshold:.1});document.querySelectorAll('.fade-in').forEach(e=>obs.observe(e));
+    const CA='0xAF73362CC150eb9d92c2abd84c1F88D4DB7dc0E5',UA='0x55d398326f99059fF775485246999027B3197955';
+    let qty=1;const PR=8;function cq(d){qty=Math.max(1,Math.min(10,qty+d));document.getElementById('mint-qty').textContent=qty;document.getElementById('mint-total').textContent=qty*PR}function tf(e){e.classList.toggle('open')}
+    const modal=createWeb3Modal({ethersConfig:defaultConfig({metadata:{name:'Reg Factory',description:'Account Mint Platform',url:'https://regfactory.xyz',icons:[]}}),chains:[{chainId:56,name:'BNB Smart Chain',currency:'BNB',explorerUrl:'https://bscscan.com',rpcUrl:'https://bsc-dataseed1.binance.org'}],projectId:'f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',themeMode:'dark',themeVariables:{'--w3m-accent':'#ffffff','--w3m-background':'#0a0a0a','--w3m-color-mix':'#0a0a0a','--w3m-color-mix-strength':40,'--w3m-border-color':'#1a1a1a','--w3m-border-radius-master':'0px','--w3m-font-family':'Inter, sans-serif'}});
+    let wa=null,pr=null;document.getElementById('wallet-btn').addEventListener('click',async()=>{if(!wa)await modal.open();else{await modal.disconnect();wa=null;pr=null;u()}});
+    modal.subscribeState(s=>{if(s.address){wa=s.address;pr=new ethers.BrowserProvider(window.ethereum);u()}});
+    function u(){const b=document.getElementById('wallet-btn'),m=document.getElementById('mint-btn');if(wa){b.textContent=wa.slice(0,6)+'...'+wa.slice(-4);b.style.borderColor='#4a4';m.textContent='MINT';m.disabled=false}else{b.textContent='CONNECT';b.style.borderColor='#333';m.textContent='CONNECT WALLET';m.disabled=true}}
+    async function hm(){if(!wa){await modal.open();return}if(!pr)pr=new ethers.BrowserProvider(window.ethereum);const n=await pr.getNetwork();if(n.chainId!==56n){alert('Switch to BNB Smart Chain.');return}const s=await pr.getSigner(),ct=new ethers.Contract(CA,['function mint(uint256) external','function price() view returns (uint256)'],s),ut=new ethers.Contract(UA,['function approve(address,uint256) returns (bool)','function allowance(address,address) view returns (uint256)'],s);try{const up=await ct.price(),tc=up*BigInt(qty),al=await ut.allowance(wa,CA);if(al<tc){document.getElementById('mint-btn').textContent='APPROVING...';document.getElementById('mint-btn').disabled=true;const at=await ut.approve(CA,tc);await at.wait()}document.getElementById('mint-btn').textContent='MINTING...';document.getElementById('mint-btn').disabled=true;await(await ct.mint(qty)).wait();alert('MINT SUCCESSFUL!\nAccounts delivered via Telegram.');document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}catch(e){alert('Failed: '+(e.message||e));document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}}
+    u();
   </script>
 </body>
 </html>
