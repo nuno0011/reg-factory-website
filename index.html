@@ -115,8 +115,8 @@
   <h2 class="section-title" style="text-align:center">Acquire an Entry</h2>
   <div class="mint-card">
     <div class="mint-label">Price per Account</div>
-    <div class="mint-price">8 <span style="font-size:1.2rem;color:#666">USDT</span></div>
-    <div class="mint-price-sub">ChatGPT · Claude · Grok · Outlook</div>
+    <div class="mint-price">FREE <span style="font-size:1.2rem;color:#666">+ Gas</span></div>
+    <div class="mint-price-sub">Total Supply: 10,000 · ChatGPT · Claude · Grok · Outlook</div>
     <div class="mint-qty">
       <button class="mint-qty-btn" onclick="changeQty(-1)">−</button>
       <span class="mint-qty-num" id="mint-qty">1</span>
@@ -284,12 +284,10 @@ async function handleMint(){
         }else{alert('Please switch to BNB Smart Chain manually.');return}
       }
     }
-    const treasury='0xab6dab4b9502c723160e357c4ffc935744da7f75';
-    const total=qty*8*1000000; // 8 USDT per qty, 6 decimals
-    document.getElementById('mint-btn').textContent='PAYING...';document.getElementById('mint-btn').disabled=true;
-    const amtHex=total.toString(16).padStart(64,'0');
-    const transferData='0xa9059cbb'+'000000000000000000000000'+treasury.slice(2)+amtHex;
-    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:transferData}]});
+    // Free mint — just sign to prove ownership, only pay gas
+    document.getElementById('mint-btn').textContent='SIGNING...';document.getElementById('mint-btn').disabled=true;
+    const msg='Reg Factory Mint #'+Date.now()+'\n\nSign to mint '+qty+' account(s).\nOnly gas fee required — no payment.';
+    await window.ethereum.request({method:'personal_sign',params:[msg,wa]});
     alert('PAYMENT SENT!\nAccounts will be delivered via Telegram.');
     document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false;
   }catch(e){alert('Failed: '+(e.message||e));document.getElementById('mint-btn').textContent='MINT';document.getElementById('mint-btn').disabled=false}
