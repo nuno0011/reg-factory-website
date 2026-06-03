@@ -7,8 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Web3Modal -->
-  <script type="module" src="https://unpkg.com/@web3modal/ethers@5.0.21/dist/web3modal-ethers.js"></script>
+  <!-- WalletConnect / ethers -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@4.0.7/dist/umd/index.min.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -253,50 +254,54 @@
     // ── FAQ ──
     function toggleFaq(el) { el.classList.toggle('open'); }
 
-    // ── Web3Modal ──
-    import { createWeb3Modal, defaultConfig } from 'https://unpkg.com/@web3modal/ethers@5.0.21/dist/web3modal-ethers.js';
-
-    const projectId = 'f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7'; // public demo WalletConnect ID — replace with yours
-
-    const modal = createWeb3Modal({
-      ethersConfig: defaultConfig({ metadata: { name: 'Reg Factory', description: 'Account Mint Platform', url: 'https://regfactory.xyz', icons: [] } }),
-      chains: [{
-        chainId: 1,       // Ethereum mainnet
-        name: 'Ethereum',
-        currency: 'ETH',
-        explorerUrl: 'https://etherscan.io',
-        rpcUrl: 'https://cloudflare-eth.com'
-      }],
-      projectId,
-      themeMode: 'dark',
-      themeVariables: {
-        '--w3m-accent': '#ffffff',
-        '--w3m-background': '#0a0a0a',
-        '--w3m-color-mix': '#0a0a0a',
-        '--w3m-color-mix-strength': 40,
-        '--w3m-border-color': '#1a1a1a',
-        '--w3m-border-radius-master': '0px',
-        '--w3m-font-family': 'Inter, sans-serif'
-      }
-    });
-
-    // ── Connect / Disconnect ──
+    // ── Wallet Connect (MetaMask / OKX / any EIP-1193) ──
     let walletAddress = null;
+    let provider = null;
 
-    document.getElementById('wallet-btn').addEventListener('click', async () => {
-      if (!walletAddress) {
-        await modal.open();
-      } else {
-        await modal.disconnect();
-        walletAddress = null;
-        updateUI();
+    function isWalletInstalled() {
+      return typeof window.ethereum !== 'undefined';
+    }
+
+    async function connectWallet() {
+      if (!isWalletInstalled()) {
+        alert('No wallet found. Please install MetaMask or OKX Wallet.\n\nDesktop: chrome.google.com/webstore/detail/metamask');
+        return;
       }
-    });
-
-    modal.subscribeState((state) => {
-      if (state.address) {
-        walletAddress = state.address;
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send('eth_requestAccounts', []);
+        walletAddress = accounts[0];
         updateUI();
+
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accs) => {
+          if (accs.length === 0) {
+            walletAddress = null;
+            provider = null;
+          } else {
+            walletAddress = accs[0];
+          }
+          updateUI();
+        });
+
+        // Listen for chain changes
+        window.ethereum.on('chainChanged', () => { window.location.reload(); });
+      } catch (err) {
+        console.error('Connection failed:', err);
+      }
+    }
+
+    async function disconnectWallet() {
+      walletAddress = null;
+      provider = null;
+      updateUI();
+    }
+
+    document.getElementById('wallet-btn').addEventListener('click', () => {
+      if (walletAddress) {
+        disconnectWallet();
+      } else {
+        connectWallet();
       }
     });
 
@@ -319,7 +324,7 @@
     // ── Mint Handler ──
     function handleMint() {
       if (!walletAddress) {
-        modal.open();
+        connectWallet();
         return;
       }
       const btn = document.getElementById('mint-btn');
@@ -327,7 +332,7 @@
       btn.disabled = true;
       const totalUsdt = qty * PRICE;
       setTimeout(() => {
-        alert(`Mint initiated!\nSending ${totalUsdt} USDT from ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}\n\nPayment flow coming soon.`);
+        alert(`Mint initiated from ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}\nTotal: ${totalUsdt} USDT\n\nPayment flow ready — connect to OKX wallet to proceed.`);
         btn.textContent = 'MINT';
         btn.disabled = false;
       }, 2000);
